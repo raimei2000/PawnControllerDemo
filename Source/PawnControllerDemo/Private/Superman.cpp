@@ -3,6 +3,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "SuperPlayerController.h"
+#include "EnhancedInputComponent.h"
+#include "InputActionValue.h"
 
 ASuperman::ASuperman()
 {
@@ -25,6 +28,28 @@ ASuperman::ASuperman()
 
 }
 
+void ASuperman::Move(const FInputActionValue& Value)
+{
+	if (!Controller) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("Superman Move"));
+
+	const FVector2D MoveInput = Value.Get<FVector2D>();
+	
+	if (!FMath::IsNearlyZero(MoveInput.X))
+	{
+		AddActorLocalOffset(MoveSpeed * GetActorForwardVector() * MoveInput.X);
+	}
+	if (!FMath::IsNearlyZero(MoveInput.Y))
+	{
+		AddActorLocalOffset(MoveSpeed * GetActorRightVector() * MoveInput.Y);
+	}
+}
+
+void ASuperman::Look(const FInputActionValue& Value)
+{
+}
+
 void ASuperman::BeginPlay()
 {
 	Super::BeginPlay();
@@ -41,5 +66,22 @@ void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		if (ASuperPlayerController* PlayerController = Cast<ASuperPlayerController>(GetController()))
+		{
+			if (PlayerController->MoveAction)
+			{
+				EnhancedInput->BindAction(PlayerController->MoveAction,
+					                      ETriggerEvent::Triggered,
+					                      this,
+					                      &ASuperman::Move);
+			}
+			if (PlayerController->LookAction)
+			{
+
+			}
+		}
+	}
 }
 
