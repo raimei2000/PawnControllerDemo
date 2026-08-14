@@ -16,8 +16,6 @@ ASuperman::ASuperman()
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 300.0f;
 	SpringArmComponent->bUsePawnControlRotation = false;
-	/*SpringArmComponent->bInheritPitch = true;
-	SpringArmComponent->bInheritYaw = true;*/
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
@@ -29,38 +27,49 @@ ASuperman::ASuperman()
 	PrimaryActorTick.bCanEverTick = true;
 
 	MoveSpeed = 500.0f;
-	LookSpeed = 30.0f;
+	LookSpeed = 1.0f;
 
+	MoveInputVector = FVector2D::ZeroVector;
+	LookInputVector = FVector2D::ZeroVector;
+
+	MinPitch = -85.0f;
+	MaxPitch = 85.0f;
+
+	CurrentPitch = 0.0f;
 }
 
-void ASuperman::Move(const FInputActionValue& Value)
+void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
 {
-	const FVector2D MoveInput = Value.Get<FVector2D>();
-	
-	if (!FMath::IsNearlyZero(MoveInput.X))
+	MoveInputVector += Value.Get<FVector2D>();
+}
+
+void ASuperman::AccumulateLookVector(const FInputActionValue& Value)
+{
+	LookInputVector += Value.Get<FVector2D>();
+}
+
+void ASuperman::Move(float DeltaTime)
+{
+	if (!MoveInputVector.IsNearlyZero())
 	{
-		AddActorLocalOffset(MoveSpeedPerFrame * GetActorForwardVector() * MoveInput.X);
-	}
-	if (!FMath::IsNearlyZero(MoveInput.Y))
-	{
-		AddActorLocalOffset(MoveSpeedPerFrame * GetActorRightVector() * MoveInput.Y);
+		FVector LocalDirection(MoveInputVector.X, MoveInputVector.Y, 0.0f);
+		LocalDirection = LocalDirection.GetClampedToMaxSize(1.0f);
+		AddActorLocalOffset(MoveSpeed * DeltaTime * LocalDirection);
+
+		MoveInputVector = FVector2D::ZeroVector;
 	}
 }
 
-void ASuperman::Look(const FInputActionValue& Value)
+void ASuperman::Look()
 {
-	const FVector2D LookInput = Value.Get<FVector2D>();
+	if (!LookInputVector.IsNearlyZero())
+	{
+		CurrentPitch = FMath::ClampAngle(CurrentPitch + LookInputVector.Y * LookSpeed, MinPitch, MaxPitch);
+		AddActorLocalRotation(FRotator(0.0f, LookInputVector.X * LookSpeed, 0.0f));
+		SpringArmComponent->SetRelativeRotation(FRotator(CurrentPitch, 0.0f, 0.0f));
 
-	FRotator DeltaRotator(0.0f, 0.0f, 0.0f);
-	if (!FMath::IsNearlyZero(LookInput.X))
-	{
-		DeltaRotator.Yaw = LookInput.X;
+		LookInputVector = FVector2D::ZeroVector;
 	}
-	if (!FMath::IsNearlyZero(LookInput.Y))
-	{
-		DeltaRotator.Pitch = LookInput.Y;
-	}
-	SetActorRotation(GetActorRotation() + DeltaRotator);
 }
 
 void ASuperman::BeginPlay()
@@ -73,9 +82,8 @@ void ASuperman::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	MoveSpeedPerFrame = MoveSpeed * DeltaTime;
-	LookSpeedPerFrame = LookSpeed * DeltaTime;
-	
+	Move(DeltaTime);
+	Look();
 }
 
 void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -91,14 +99,14 @@ void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 				EnhancedInput->BindAction(PlayerController->MoveAction,
 					                      ETriggerEvent::Triggered,
 					                      this,
-					                      &ASuperman::Move);
+					                      &ASuperman::AccumulateMoveVector);
 			}
 			if (PlayerController->LookAction)
 			{
 				EnhancedInput->BindAction(PlayerController->LookAction,
 					                      ETriggerEvent::Triggered,
 					                      this,
-					                      &ASuperman::Look);
+					                      &ASuperman::AccumulateLookVector);
 			}
 		}
 	}

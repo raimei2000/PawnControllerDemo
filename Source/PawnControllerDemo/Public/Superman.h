@@ -31,14 +31,22 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
 	float LookSpeed;
 
-	float MoveSpeedPerFrame;
-	float LookSpeedPerFrame;
+	FVector2D MoveInputVector;
+	FVector2D LookInputVector;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
+	float MinPitch;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
+	float MaxPitch;
 
 protected:
 	UFUNCTION()
-	void Move(const FInputActionValue& Value);
+	void AccumulateMoveVector(const FInputActionValue& Value);
 	UFUNCTION()
-	void Look(const FInputActionValue& Value);
+	void AccumulateLookVector(const FInputActionValue& Value);
+
+	void Move(float DeltaTime);
+	void Look();
 
 	virtual void BeginPlay() override;
 
@@ -46,5 +54,8 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+	float CurrentPitch;
 
 };
