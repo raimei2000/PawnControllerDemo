@@ -29,9 +29,13 @@ ASuperman::ASuperman()
 	PrimaryActorTick.bCanEverTick = true;
 
 	MoveSpeed = 500.0f;
-	LookSpeed = 30.0f;
+	LookSpeed = 1.0f;
 
 	MoveInputVector = FVector2D::ZeroVector;
+	LookInputVector = FVector2D::ZeroVector;
+
+	MinPitch = -85.0f;
+	MaxPitch = 85.0f;
 }
 
 void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
@@ -41,18 +45,7 @@ void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
 
 void ASuperman::AccumulateLookVector(const FInputActionValue& Value)
 {
-	const FVector2D LookInput = Value.Get<FVector2D>();
-
-	FRotator DeltaRotator(0.0f, 0.0f, 0.0f);
-	if (!FMath::IsNearlyZero(LookInput.X))
-	{
-		DeltaRotator.Yaw = LookInput.X;
-	}
-	if (!FMath::IsNearlyZero(LookInput.Y))
-	{
-		DeltaRotator.Pitch = LookInput.Y;
-	}
-	SetActorRotation(GetActorRotation() + DeltaRotator);
+	LookInputVector += Value.Get<FVector2D>();
 }
 
 void ASuperman::Move(float DeltaTime)
@@ -67,8 +60,18 @@ void ASuperman::Move(float DeltaTime)
 	}
 }
 
-void ASuperman::Look(float DeltaTime)
+void ASuperman::Look()
 {
+	if (!LookInputVector.IsNearlyZero())
+	{
+		FRotator NewRotator = GetActorRotation();
+		NewRotator.Yaw += LookInputVector.X;
+		NewRotator.Pitch = FMath::ClampAngle(NewRotator.Pitch + LookInputVector.Y * LookSpeed, MinPitch, MaxPitch);
+		NewRotator.Roll = 0.0f;
+		SetActorRotation(NewRotator);
+
+		LookInputVector = FVector2D::ZeroVector;
+	}
 }
 
 void ASuperman::BeginPlay()
@@ -82,7 +85,7 @@ void ASuperman::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	Move(DeltaTime);
-	
+	Look();
 }
 
 void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
