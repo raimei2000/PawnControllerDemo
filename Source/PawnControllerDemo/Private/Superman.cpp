@@ -16,7 +16,6 @@ ASuperman::ASuperman()
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 300.0f;
 	SpringArmComponent->bUsePawnControlRotation = false;
-	SpringArmComponent->bInheritPitch = false;
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
@@ -35,6 +34,8 @@ ASuperman::ASuperman()
 
 	MinPitch = -85.0f;
 	MaxPitch = 85.0f;
+
+	CurrentPitch = 0.0f;
 }
 
 void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
@@ -63,12 +64,9 @@ void ASuperman::Look()
 {
 	if (!LookInputVector.IsNearlyZero())
 	{
-		FRotator NewRotator = GetActorRotation();
-		float Pitch = FMath::ClampAngle(NewRotator.Pitch + LookInputVector.Y * LookSpeed, MinPitch, MaxPitch);
-		float Yaw = NewRotator.Yaw + LookInputVector.X * LookSpeed;
-		float Roll = 0.0f;
-		SetActorRotation(FRotator(0.0f, Yaw, 0.0f));
-		SpringArmComponent->SetRelativeRotation(FRotator(Pitch, 0.0f, 0.0f));
+		CurrentPitch = FMath::ClampAngle(CurrentPitch + LookInputVector.Y * LookSpeed, MinPitch, MaxPitch);
+		AddActorLocalRotation(FRotator(0.0f, LookInputVector.X * LookSpeed, 0.0f));
+		SpringArmComponent->SetRelativeRotation(FRotator(CurrentPitch, 0.0f, 0.0f));
 
 		LookInputVector = FVector2D::ZeroVector;
 	}
