@@ -1,10 +1,12 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Superman.generated.h"
+
+class UCapsuleComponent;
+class USpringArmComponent;
+class UCameraComponent;
 
 UCLASS()
 class PAWNCONTROLLERDEMO_API ASuperman : public APawn
@@ -12,18 +14,24 @@ class PAWNCONTROLLERDEMO_API ASuperman : public APawn
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	ASuperman();
 
 protected:
-	// Called when the game starts or when spawned
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Superman|Components")
+	UCapsuleComponent* CapsuleComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Superman|Components")
+	USpringArmComponent* SpringArmComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Superman|Components")
+	UCameraComponent* CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Superman|Components")
+	USkeletalMeshComponent* SkeletalMeshComponent;
+
 	virtual void BeginPlay() override;
 
+
 public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };
