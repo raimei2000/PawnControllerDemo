@@ -15,7 +15,9 @@ ASuperman::ASuperman()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 300.0f;
-	SpringArmComponent->bUsePawnControlRotation = true;
+	SpringArmComponent->bUsePawnControlRotation = false;
+	/*SpringArmComponent->bInheritPitch = true;
+	SpringArmComponent->bInheritYaw = true;*/
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
@@ -49,14 +51,16 @@ void ASuperman::Look(const FInputActionValue& Value)
 {
 	const FVector2D LookInput = Value.Get<FVector2D>();
 
+	FRotator DeltaRotator(0.0f, 0.0f, 0.0f);
 	if (!FMath::IsNearlyZero(LookInput.X))
 	{
-		AddActorLocalRotation(LookSpeedPerFrame * FRotator(0.0f, LookInput.X, 0.0f));
+		DeltaRotator.Yaw = LookInput.X;
 	}
 	if (!FMath::IsNearlyZero(LookInput.Y))
 	{
-		AddActorLocalRotation(MoveSpeedPerFrame * FRotator(LookInput.Y, 0.0f, 0.0f));
+		DeltaRotator.Pitch = LookInput.Y;
 	}
+	SetActorRotation(GetActorRotation() + DeltaRotator);
 }
 
 void ASuperman::BeginPlay()
