@@ -26,28 +26,37 @@ ASuperman::ASuperman()
 
 	PrimaryActorTick.bCanEverTick = true;
 
+	MoveSpeed = 500.0f;
+	LookSpeed = 30.0f;
+
 }
 
 void ASuperman::Move(const FInputActionValue& Value)
 {
-	if (!Controller) return;
-
-	UE_LOG(LogTemp, Warning, TEXT("Superman Move"));
-
 	const FVector2D MoveInput = Value.Get<FVector2D>();
 	
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
-		AddActorLocalOffset(MoveSpeed * GetActorForwardVector() * MoveInput.X);
+		AddActorLocalOffset(MoveSpeedPerFrame * GetActorForwardVector() * MoveInput.X);
 	}
 	if (!FMath::IsNearlyZero(MoveInput.Y))
 	{
-		AddActorLocalOffset(MoveSpeed * GetActorRightVector() * MoveInput.Y);
+		AddActorLocalOffset(MoveSpeedPerFrame * GetActorRightVector() * MoveInput.Y);
 	}
 }
 
 void ASuperman::Look(const FInputActionValue& Value)
 {
+	const FVector2D LookInput = Value.Get<FVector2D>();
+
+	if (!FMath::IsNearlyZero(LookInput.X))
+	{
+		AddActorLocalRotation(LookSpeedPerFrame * FRotator(0.0f, LookInput.X, 0.0f));
+	}
+	if (!FMath::IsNearlyZero(LookInput.Y))
+	{
+		AddActorLocalRotation(MoveSpeedPerFrame * FRotator(LookInput.Y, 0.0f, 0.0f));
+	}
 }
 
 void ASuperman::BeginPlay()
@@ -60,6 +69,9 @@ void ASuperman::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	MoveSpeedPerFrame = MoveSpeed * DeltaTime;
+	LookSpeedPerFrame = LookSpeed * DeltaTime;
+	
 }
 
 void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -79,7 +91,10 @@ void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 			}
 			if (PlayerController->LookAction)
 			{
-
+				EnhancedInput->BindAction(PlayerController->LookAction,
+					                      ETriggerEvent::Triggered,
+					                      this,
+					                      &ASuperman::Look);
 			}
 		}
 	}

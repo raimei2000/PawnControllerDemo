@@ -26,7 +26,13 @@ protected:
 	UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Superman|Components")
 	USkeletalMeshComponent* SkeletalMeshComponent;
-	float MoveSpeed = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
+	float MoveSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
+	float LookSpeed;
+
+	float MoveSpeedPerFrame;
+	float LookSpeedPerFrame;
 
 protected:
 	UFUNCTION()
@@ -39,7 +45,6 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };
