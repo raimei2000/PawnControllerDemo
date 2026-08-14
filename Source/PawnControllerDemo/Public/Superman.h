@@ -7,6 +7,7 @@
 class UCapsuleComponent;
 class USpringArmComponent;
 class UCameraComponent;
+class FInputActionValues;
 
 UCLASS()
 class PAWNCONTROLLERDEMO_API ASuperman : public APawn
@@ -25,6 +26,12 @@ protected:
 	UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Superman|Components")
 	USkeletalMeshComponent* SkeletalMeshComponent;
+
+protected:
+	/*UFUNCTION()
+	void Move(const FInputActionValues& Value);
+	UFUNCTION()
+	void Look(const FInputActionValues& Value);*/
 
 	virtual void BeginPlay() override;
 
