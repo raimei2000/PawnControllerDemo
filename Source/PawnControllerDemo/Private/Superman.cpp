@@ -31,23 +31,15 @@ ASuperman::ASuperman()
 	MoveSpeed = 500.0f;
 	LookSpeed = 30.0f;
 
+	MoveInputVector = FVector2D::ZeroVector;
 }
 
-void ASuperman::Move(const FInputActionValue& Value)
+void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
 {
-	const FVector2D MoveInput = Value.Get<FVector2D>();
-	
-	if (!FMath::IsNearlyZero(MoveInput.X))
-	{
-		AddActorLocalOffset(MoveSpeedPerFrame * FVector::ForwardVector * MoveInput.X);
-	}
-	if (!FMath::IsNearlyZero(MoveInput.Y))
-	{
-		AddActorLocalOffset(MoveSpeedPerFrame * FVector::RightVector * MoveInput.Y);
-	}
+	MoveInputVector += Value.Get<FVector2D>();
 }
 
-void ASuperman::Look(const FInputActionValue& Value)
+void ASuperman::AccumulateLookVector(const FInputActionValue& Value)
 {
 	const FVector2D LookInput = Value.Get<FVector2D>();
 
@@ -63,6 +55,22 @@ void ASuperman::Look(const FInputActionValue& Value)
 	SetActorRotation(GetActorRotation() + DeltaRotator);
 }
 
+void ASuperman::Move(float DeltaTime)
+{
+	if (!MoveInputVector.IsNearlyZero())
+	{
+		FVector LocalDirection(MoveInputVector.X, MoveInputVector.Y, 0.0f);
+		LocalDirection = LocalDirection.GetClampedToMaxSize(1.0f);
+		AddActorLocalOffset(MoveSpeed * DeltaTime * LocalDirection);
+
+		MoveInputVector = FVector2D::ZeroVector;
+	}
+}
+
+void ASuperman::Look(float DeltaTime)
+{
+}
+
 void ASuperman::BeginPlay()
 {
 	Super::BeginPlay();
@@ -73,8 +81,7 @@ void ASuperman::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	MoveSpeedPerFrame = MoveSpeed * DeltaTime;
-	LookSpeedPerFrame = LookSpeed * DeltaTime;
+	Move(DeltaTime);
 	
 }
 
@@ -91,14 +98,14 @@ void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 				EnhancedInput->BindAction(PlayerController->MoveAction,
 					                      ETriggerEvent::Triggered,
 					                      this,
-					                      &ASuperman::Move);
+					                      &ASuperman::AccumulateMoveVector);
 			}
 			if (PlayerController->LookAction)
 			{
 				EnhancedInput->BindAction(PlayerController->LookAction,
 					                      ETriggerEvent::Triggered,
 					                      this,
-					                      &ASuperman::Look);
+					                      &ASuperman::AccumulateLookVector);
 			}
 		}
 	}

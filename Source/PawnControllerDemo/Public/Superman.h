@@ -32,13 +32,17 @@ protected:
 	float LookSpeed;
 
 	float MoveSpeedPerFrame;
-	float LookSpeedPerFrame;
+
+	FVector2D MoveInputVector;
 
 protected:
 	UFUNCTION()
-	void Move(const FInputActionValue& Value);
+	void AccumulateMoveVector(const FInputActionValue& Value);
 	UFUNCTION()
-	void Look(const FInputActionValue& Value);
+	void AccumulateLookVector(const FInputActionValue& Value);
+
+	void Move(float DeltaTime);
+	void Look(float DeltaTime);
 
 	virtual void BeginPlay() override;
 
