@@ -39,11 +39,11 @@ void ASuperman::Move(const FInputActionValue& Value)
 	
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
-		AddActorLocalOffset(MoveSpeedPerFrame * GetActorForwardVector() * MoveInput.X);
+		AddActorLocalOffset(MoveSpeedPerFrame * FVector::ForwardVector * MoveInput.X);
 	}
 	if (!FMath::IsNearlyZero(MoveInput.Y))
 	{
-		AddActorLocalOffset(MoveSpeedPerFrame * GetActorRightVector() * MoveInput.Y);
+		AddActorLocalOffset(MoveSpeedPerFrame * FVector::RightVector * MoveInput.Y);
 	}
 }
 
