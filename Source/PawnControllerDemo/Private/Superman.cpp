@@ -67,7 +67,18 @@ void ASuperman::Move(float DeltaTime)
 	if (!MoveInputVector.IsNearlyZero())
 	{
 		const FVector LocalDirection = MoveInputVector.GetClampedToMaxSize(1.0f);
-		AddActorLocalOffset(MoveSpeed * DeltaTime * LocalDirection);
+
+		const FVector WorldDelta = GetActorQuat().RotateVector(LocalDirection) * MoveSpeed * DeltaTime;
+
+		FHitResult Hit;
+		AddActorWorldOffset(WorldDelta, true, &Hit);
+
+		if (Hit.bBlockingHit && !Hit.bStartPenetrating)
+		{
+			const FVector Remaining = WorldDelta * (1.0f - Hit.Time);
+			const FVector Slide = FVector::VectorPlaneProject(Remaining, Hit.Normal);
+			AddActorWorldOffset(Slide, true);
+		}
 	}
 	MoveInputVector = FVector::ZeroVector;
 }
