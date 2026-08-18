@@ -28,9 +28,10 @@ ASuperman::ASuperman()
 
 	MoveSpeed = 500.0f;
 	LookSpeed = 1.0f;
+	RollSpeed = 90.0f;
 
 	MoveInputVector = FVector::ZeroVector;
-	LookInputVector = FVector2D::ZeroVector;
+	RotationInput = FRotator::ZeroRotator;
 
 	MinPitch = -85.0f;
 	MaxPitch = 85.0f;
@@ -46,12 +47,19 @@ void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
 
 void ASuperman::AccumulateLookVector(const FInputActionValue& Value)
 {
-	LookInputVector += Value.Get<FVector2D>();
+	const FVector2D Input = Value.Get<FVector2D>();
+	RotationInput.Yaw = Input.X;
+	RotationInput.Pitch = Input.Y;
 }
 
 void ASuperman::AccumulateVerticalVector(const FInputActionValue& Value)
 {
 	MoveInputVector.Z += Value.Get<float>();
+}
+
+void ASuperman::AccumulateRollInput(const FInputActionValue& Value)
+{
+	RotationInput.Roll += Value.Get<float>();
 }
 
 void ASuperman::Move(float DeltaTime)
@@ -64,16 +72,20 @@ void ASuperman::Move(float DeltaTime)
 	MoveInputVector = FVector::ZeroVector;
 }
 
-void ASuperman::Look()
+void ASuperman::Look(float DeltaTime)
 {
-	if (!LookInputVector.IsNearlyZero())
+	const FRotator DeltaRotation(0.0f, RotationInput.Yaw * LookSpeed, RotationInput.Roll * RollSpeed * DeltaTime);
+	if (!DeltaRotation.IsNearlyZero())
 	{
-		CurrentPitch = FMath::ClampAngle(CurrentPitch + LookInputVector.Y * LookSpeed, MinPitch, MaxPitch);
-		AddActorLocalRotation(FRotator(0.0f, LookInputVector.X * LookSpeed, 0.0f));
-		SpringArmComponent->SetRelativeRotation(FRotator(CurrentPitch, 0.0f, 0.0f));
-
-		LookInputVector = FVector2D::ZeroVector;
+		AddActorLocalRotation(DeltaRotation);
 	}
+
+	if (!FMath::IsNearlyZero(RotationInput.Pitch))
+	{
+		CurrentPitch = FMath::ClampAngle(CurrentPitch + RotationInput.Pitch * LookSpeed, MinPitch, MaxPitch);
+		SpringArmComponent->SetRelativeRotation(FRotator(CurrentPitch, 0.0f, 0.0f));
+	}
+	RotationInput = FRotator::ZeroRotator;
 }
 
 void ASuperman::BeginPlay()
@@ -87,7 +99,7 @@ void ASuperman::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	Move(DeltaTime);
-	Look();
+	Look(DeltaTime);
 }
 
 void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
