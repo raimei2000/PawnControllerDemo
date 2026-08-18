@@ -30,9 +30,11 @@ protected:
 	float MoveSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
 	float LookSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
+	float RollSpeed;
 
-	FVector2D MoveInputVector;
-	FVector2D LookInputVector;
+	FVector MoveInputVector;
+	FRotator RotationInput;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
 	float MinPitch;
@@ -44,9 +46,13 @@ protected:
 	void AccumulateMoveVector(const FInputActionValue& Value);
 	UFUNCTION()
 	void AccumulateLookVector(const FInputActionValue& Value);
+	UFUNCTION()
+	void AccumulateVerticalVector(const FInputActionValue& Value);
+	UFUNCTION()
+	void AccumulateRollInput(const FInputActionValue& Value);
 
 	void Move(float DeltaTime);
-	void Look();
+	void Look(float DeltaTime);
 
 	virtual void BeginPlay() override;
 
