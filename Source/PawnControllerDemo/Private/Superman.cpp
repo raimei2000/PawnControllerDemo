@@ -29,7 +29,7 @@ ASuperman::ASuperman()
 	MoveSpeed = 500.0f;
 	LookSpeed = 1.0f;
 
-	MoveInputVector = FVector2D::ZeroVector;
+	MoveInputVector = FVector::ZeroVector;
 	LookInputVector = FVector2D::ZeroVector;
 
 	MinPitch = -85.0f;
@@ -40,7 +40,8 @@ ASuperman::ASuperman()
 
 void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
 {
-	MoveInputVector += Value.Get<FVector2D>();
+	const FVector2D Input = Value.Get<FVector2D>();
+	MoveInputVector += FVector(Input.X, Input.Y, 0.0f);
 }
 
 void ASuperman::AccumulateLookVector(const FInputActionValue& Value)
@@ -48,16 +49,19 @@ void ASuperman::AccumulateLookVector(const FInputActionValue& Value)
 	LookInputVector += Value.Get<FVector2D>();
 }
 
+void ASuperman::AccumulateVerticalVector(const FInputActionValue& Value)
+{
+	MoveInputVector.Z += Value.Get<float>();
+}
+
 void ASuperman::Move(float DeltaTime)
 {
 	if (!MoveInputVector.IsNearlyZero())
 	{
-		FVector LocalDirection(MoveInputVector.X, MoveInputVector.Y, 0.0f);
-		LocalDirection = LocalDirection.GetClampedToMaxSize(1.0f);
+		const FVector LocalDirection = MoveInputVector.GetClampedToMaxSize(1.0f);
 		AddActorLocalOffset(MoveSpeed * DeltaTime * LocalDirection);
-
-		MoveInputVector = FVector2D::ZeroVector;
 	}
+	MoveInputVector = FVector::ZeroVector;
 }
 
 void ASuperman::Look()
@@ -107,6 +111,13 @@ void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 					                      ETriggerEvent::Triggered,
 					                      this,
 					                      &ASuperman::AccumulateLookVector);
+			}
+			if (PlayerController->MoveVerticalAction)
+			{
+				EnhancedInput->BindAction(PlayerController->MoveVerticalAction,
+					                      ETriggerEvent::Triggered,
+					                      this,
+					                      &ASuperman::AccumulateVerticalVector);
 			}
 		}
 	}

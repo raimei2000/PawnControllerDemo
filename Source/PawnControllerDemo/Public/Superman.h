@@ -31,7 +31,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
 	float LookSpeed;
 
-	FVector2D MoveInputVector;
+	FVector MoveInputVector;
 	FVector2D LookInputVector;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Superman|Input")
@@ -44,6 +44,8 @@ protected:
 	void AccumulateMoveVector(const FInputActionValue& Value);
 	UFUNCTION()
 	void AccumulateLookVector(const FInputActionValue& Value);
+	UFUNCTION()
+	void AccumulateVerticalVector(const FInputActionValue& Value);
 
 	void Move(float DeltaTime);
 	void Look();
