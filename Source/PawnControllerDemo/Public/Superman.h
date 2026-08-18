@@ -46,6 +46,8 @@ protected:
 	void AccumulateLookVector(const FInputActionValue& Value);
 	UFUNCTION()
 	void AccumulateVerticalVector(const FInputActionValue& Value);
+	UFUNCTION()
+	void AccumulateRollInput(const FInputActionValue& Value);
 
 	void Move(float DeltaTime);
 	void Look();

@@ -119,6 +119,13 @@ void ASuperman::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 					                      this,
 					                      &ASuperman::AccumulateVerticalVector);
 			}
+			if (PlayerController->RollAction)
+			{
+				EnhancedInput->BindAction(PlayerController->RollAction,
+					                      ETriggerEvent::Triggered,
+					                      this,
+					                      &ASuperman::AccumulateRollInput);
+			}
 		}
 	}
 }
