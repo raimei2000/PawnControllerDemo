@@ -48,8 +48,8 @@ void ASuperman::AccumulateMoveVector(const FInputActionValue& Value)
 void ASuperman::AccumulateLookVector(const FInputActionValue& Value)
 {
 	const FVector2D Input = Value.Get<FVector2D>();
-	RotationInput.Yaw = Input.X;
-	RotationInput.Pitch = Input.Y;
+	RotationInput.Yaw += Input.X;
+	RotationInput.Pitch += Input.Y;
 }
 
 void ASuperman::AccumulateVerticalVector(const FInputActionValue& Value)
